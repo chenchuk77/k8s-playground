@@ -1,0 +1,50 @@
+1. install minikube
+https://minikube.sigs.k8s.io/docs/start/
+
+2. install kubectl
+https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+
+3. add kubectl plugin to .zshrc ( then can invoke with 'k', ie : k get pods )
+
+4. install eksctl
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+
+5. add IAM permission to oidc-provider (not sure why its needed)
+   add IAM permission to cloudformation (for later nodegroup)
+   add IAM permission to allow iam-servicerole (for later nodegroup)
+   see user aws/chen-dev
+
+6. create cluster (https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html)
+   this will also config local .kube to point to the new cluster
+eksctl version
+eksctl create cluster --help
+eksctl create cluster \
+ --name chen-cluster-0 \
+ --region eu-west-1 \
+ --version 1.18 \
+ --with-oidc \
+ --without-nodegroup
+
+eksctl get cluster
+
+7. check kube context 
+kubectl config get-contexts
+
+8. invoke command on the remote eks-cluster
+kubectl get svc
+
+9. create nodegroup (https://docs.aws.amazon.com/eks/latest/userguide/launch-workers.html)
+eksctl create nodegroup \
+  --cluster chen-cluster-0 \
+  --region eu-west-1 \
+  --name chen-nodegroup-0 \
+  --node-type t3.medium \
+  --nodes 3 \
+  --nodes-min 2 \
+  --nodes-max 4 \
+  --ssh-access \
+  --ssh-public-key chen-k8s-test \
+  --managed
+this creates 3 nodes in aws:chen-cluster-0-chen-nodegroup-0-Node
+
